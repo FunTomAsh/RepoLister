@@ -30,6 +30,9 @@ public class RepoListerService {
 
             List<GHRepository> ghRepositories = new ArrayList<>();
             for (Map<String, Object> repo : repos) {
+                if (Boolean.TRUE.equals(repo.get("fork"))) {
+                    continue;
+                }
                 String repoName = (String) repo.get("name");
                 String branchesUrl = String.format("https://api.github.com/repos/%s/%s/branches", username, repoName);
                 List<Map<String, Object>> branches = rest.getForObject(branchesUrl, List.class);
@@ -45,7 +48,6 @@ public class RepoListerService {
 
             List<UsersRepos> usersReposList = new ArrayList<>();
             usersReposList.add(new UsersRepos(username, ghRepositories));
-
             return usersReposList;
         }
         catch (HttpClientErrorException exception) {
