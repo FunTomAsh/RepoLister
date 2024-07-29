@@ -1,6 +1,8 @@
 package com.example.RepoLister.repositories;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
@@ -22,28 +24,36 @@ public class RepoListerService {
     }
 
     public List<UsersRepos> findAll(String username) {
-        String url = String.format("https://api.github.com/users/%s/repos", username);
-        List<Map<String, Object>> repos = rest.getForObject(url, List.class);
+        try{
+            String url = String.format("https://api.github.com/users/%s/repos", username);
+            List<Map<String, Object>> repos = rest.getForObject(url, List.class);
 
-        List<GHRepository> ghRepositories = new ArrayList<>();
-        for (Map<String, Object> repo : repos) {
-            String repoName = (String) repo.get("name");
-            String branchesUrl = String.format("https://api.github.com/repos/%s/%s/branches", username, repoName);
-            List<Map<String, Object>> branches = rest.getForObject(branchesUrl, List.class);
+            List<GHRepository> ghRepositories = new ArrayList<>();
+            for (Map<String, Object> repo : repos) {
+                String repoName = (String) repo.get("name");
+                String branchesUrl = String.format("https://api.github.com/repos/%s/%s/branches", username, repoName);
+                List<Map<String, Object>> branches = rest.getForObject(branchesUrl, List.class);
 
-            List<Branch> branchList = new ArrayList<>();
-            for (Map<String, Object> branch : branches) {
-                String branchName = (String) branch.get("name");
-                String lastCommitSha = (String) ((Map<String, Object>) branch.get("commit")).get("sha");
-                branchList.add(new Branch(branchName, lastCommitSha));
+                List<Branch> branchList = new ArrayList<>();
+                for (Map<String, Object> branch : branches) {
+                    String branchName = (String) branch.get("name");
+                    String lastCommitSha = (String) ((Map<String, Object>) branch.get("commit")).get("sha");
+                    branchList.add(new Branch(branchName, lastCommitSha));
+                }
+                ghRepositories.add(new GHRepository(repoName, branchList));
             }
-            ghRepositories.add(new GHRepository(repoName, branchList));
+
+            List<UsersRepos> usersReposList = new ArrayList<>();
+            usersReposList.add(new UsersRepos(username, ghRepositories));
+
+            return usersReposList;
         }
-
-        List<UsersRepos> usersReposList = new ArrayList<>();
-        usersReposList.add(new UsersRepos(username, ghRepositories));
-
-        return usersReposList;
+        catch (HttpClientErrorException exception) {
+            if (exception.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new UserNotFoundException("User not found.");
+            }
+            throw exception;
+        }
     }
 /*    @PostConstruct
     private void init(){
