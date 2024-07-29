@@ -23,7 +23,7 @@ public class RepoListerController {
     public ResponseEntity<List<UsersRepos>> findAll(@PathVariable String username) {
         try {
             List<UsersRepos> repos = repoListerService.findAll(username);
-            return new ResponseEntity<>(repos, HttpStatus.OK);
+            return ResponseEntity.ok(repos);
         } catch (GlobalControllerExceptionHandler exception) {
             throw exception;
         }
