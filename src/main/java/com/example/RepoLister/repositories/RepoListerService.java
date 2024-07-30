@@ -18,6 +18,8 @@ public class RepoListerService {
 
     private List<UsersRepos> urepos = new ArrayList<>();
     private final RestTemplate rest;
+    private static final String USER_REPOS_URL = "https://api.github.com/users/%s/repos";
+    private static final String REPO_BRANCHES_URL = "https://api.github.com/repos/%s/%s/branches";
 
 /*    List<UsersRepos> findAll(String username){
         return urepos;
@@ -29,7 +31,7 @@ public class RepoListerService {
 
     public List<UsersRepos> findAll(String username) {
         try{
-            String url = String.format("https://api.github.com/users/%s/repos", username);
+            String url = String.format(USER_REPOS_URL, username);
             ParameterizedTypeReference<List<Map<String, Object>>> responseType = new ParameterizedTypeReference<>() {};
             ResponseEntity<List<Map<String, Object>>> response = rest.exchange(url, HttpMethod.GET, null, responseType);
             List<Map<String, Object>> repos = response.getBody();
@@ -38,7 +40,7 @@ public class RepoListerService {
                     .filter(repo -> !Boolean.TRUE.equals(repo.get("fork")))
                     .map(repo -> {
                         String repoName = (String) repo.get("name");
-                        String branchesUrl = String.format("https://api.github.com/repos/%s/%s/branches", username, repoName);
+                        String branchesUrl = String.format(REPO_BRANCHES_URL, username, repoName);
                         List<Map<String, Object>> branches = rest.exchange(branchesUrl, HttpMethod.GET, null, responseType).getBody();
 
                         List<Branch> branchList = branches.stream()
@@ -48,7 +50,6 @@ public class RepoListerService {
                                     return new Branch(branchName, lastCommitSha);
                                 })
                                 .collect(Collectors.toList());
-
                         return new GHRepository(repoName, branchList);
                     })
                     .collect(Collectors.toList());
@@ -59,16 +60,9 @@ public class RepoListerService {
             if (exception.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new UserNotFoundException("User not found.");
             }
-            throw exception;
+            else{
+                throw exception;
+            }
         }
     }
-/*    @PostConstruct
-    private void init(){
-        urepos.add(
-                new UsersRepos(
-                        username,
-                        Collections.singletonList( new GHRepository("RepoLister", Collections.singletonList(new Branch("Branch1", "CommitLast"))
-        ))));
-    }*/
-
 }

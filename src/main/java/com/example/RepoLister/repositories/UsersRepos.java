@@ -6,5 +6,4 @@ public record UsersRepos(
         String userLogin,
         List<GHRepository> repository
         ) {
-
 }

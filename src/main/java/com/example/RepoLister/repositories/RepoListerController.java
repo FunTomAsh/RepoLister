@@ -18,7 +18,9 @@ public class RepoListerController {
         this.repoListerService = repoListerService;
     }
 
-    //{username}
+    //curl -H "Accept: application/json" http://localhost:8080/api/repos/TomashKarpei
+    // OR
+    // Invoke-WebRequest -Uri http://localhost:8080/api/repos/TomashKarpei -Headers @{"Accept" = "application/json"}
     @GetMapping("/{username}")
     public ResponseEntity<List<UsersRepos>> findAll(@PathVariable String username) {
         try {
@@ -28,10 +30,4 @@ public class RepoListerController {
             throw exception;
         }
     }
-/*
-    @GetMapping("/hello")
-    String Searcher(){
-        return "yo, world!";
-    }
-*/
 }
