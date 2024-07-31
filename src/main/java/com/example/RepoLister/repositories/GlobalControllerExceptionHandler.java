@@ -19,10 +19,4 @@ public class GlobalControllerExceptionHandler extends RuntimeException {
                 "message", ex.getMessage()
         ), HttpStatus.NOT_FOUND);
     }
-
-    /*    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason="User doesn't exists.")  // 404
-    @ExceptionHandler(UserNotFoundException.class)
-    public void handleConflict() {
-        // Nothing
-    }*/
 }
